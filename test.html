@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Karte mit Checkboxen</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+/* Layout: 2 Spalten */
+#container {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+}
+
+/* Linke Spalte: Checkboxen */
+#controls {
+    display: flex;
+    flex-direction: column;   /* untereinander */
+    gap: 10px;
+    width: 220px;
+    max-height: 80vh;         /* scrollbar, wenn zu lang */
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
+    background: #f9f9f9;
+}
+
+/* Einzelne Checkbox + Bild */
+.control {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Bilder der Checkboxen */
+.control img {
+    width: 40px;
+    cursor: pointer;
+}
+
+/* Rechte Spalte: Karte */
+#map-container {
+    position: relative;
+    flex: 1;                  /* nimmt Restbreite */
+    max-width: 90vw;
+}
+
+#map-container img {
+    width: 100%;
+    display: block;
+}
+
+/* Punkte */
+.point {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: red;
+    border-radius: 50%;
+    cursor: pointer;
+    display: none;
+}
+
+/* Popup */
+.popup {
+    position: absolute;
+    background: white;
+    border: 1px solid #333;
+    padding: 6px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    display: none;
+    z-index: 10;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+</style>
+</head>
+
+<body>
+
+<h2 style="padding-left:20px;">Kategorien</h2>
+
+<div id="container">
+
+    <!-- Linke Spalte: Scrollbare Checkbox-Liste -->
+    <div id="controls">
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe1')">
+            <img src="icon1.png">
+            <span>Gericht 1</span>
+        </label>
+
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe2')">
+            <img src="icon2.png">
+            <span>Gericht 2</span>
+        </label>
+
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe3')">
+            <img src="icon3.png">
+            <span>Kategorie 3</span>
+        </label>
+
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe4')">
+            <img src="icon4.png">
+            <span>Kategorie 4</span>
+        </label>
+
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe5')">
+            <img src="icon5.png">
+            <span>Kategorie 5</span>
+        </label>
+
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe6')">
+            <img src="icon6.png">
+            <span>Kategorie 6</span>
+        </label>
+
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe7')">
+            <img src="icon7.png">
+            <span>Kategorie 7</span>
+        </label>
+
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe8')">
+            <img src="icon8.png">
+            <span>Kategorie 8</span>
+        </label>
+
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe9')">
+            <img src="icon9.png">
+            <span>Kategorie 9</span>
+        </label>
+
+        <label class="control">
+            <input type="checkbox" onclick="toggleGroup('gruppe10')">
+            <img src="icon10.png">
+            <span>Kategorie 10</span>
+        </label>
+    </div>
+
+    <!-- Rechte Spalte: Karte -->
+    <div id="map-container">
+        <img src="karte.png" alt="Karte">
+
+        <!-- Beispielpunkte -->
+        <div class="point gruppe1" style="top: 5%; left: 5%;" onclick="showPopup(this, 'Creme fresh')"></div>
+        <div class="point gruppe1" style="top: 28%; left: 70%;" onclick="showPopup(this, 'Hähnchen')"></div>
+
+        <div class="point gruppe2" style="top: 60%; left: 60%;" onclick="showPopup(this, 'Punkt C')"></div>
+        <div class="point gruppe3" style="top: 20%; left: 50%;" onclick="showPopup(this, 'Punkt D')"></div>
+        <div class="point gruppe4" style="top: 70%; left: 40%;" onclick="showPopup(this, 'Punkt E')"></div>
+
+        <div id="popup" class="popup"></div>
+    </div>
+
+</div>
+
+<script>
+// Gruppen ein-/ausblenden
+function toggleGroup(gruppe) {
+    const points = document.querySelectorAll('.' + gruppe);
+    points.forEach(p => {
+        p.style.display = (p.style.display === 'block') ? 'none' : 'block';
+    });
+}
+
+// Popup anzeigen
+function showPopup(point, text) {
+    event.stopPropagation(); // verhindert sofortiges Schließen
+
+    const popup = document.getElementById('popup');
+    popup.innerText = text;
+    popup.style.display = 'block';
+    popup.style.top = (point.offsetTop - 30) + 'px';
+    popup.style.left = (point.offsetLeft + 20) + 'px';
+}
+
+// Popup schließen
+function hidePopup() {
+    document.getElementById('popup').style.display = 'none';
+}
+
+// Klick außerhalb schließt Popup
+document.addEventListener('click', function(event) {
+    const popup = document.getElementById('popup');
+
+    if (
+        popup.style.display === 'block' &&
+        !event.target.classList.contains('point') &&
+        event.target !== popup
+    ) {
+        hidePopup();
+    }
+});
+
+// ESC schließt Popup
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') hidePopup();
+});
+</script>
+
+</body>
+</html>
