@@ -8,52 +8,50 @@
 body {
     font-family: Arial, sans-serif;
     margin: 0;
-    padding: 0;
-}
-
-/* Layout: 2 Spalten */
-#container {
-    display: flex;
-    gap: 20px;
     padding: 20px;
 }
 
-/* Linke Spalte: Checkboxen */
+/* Gesamtlayout */
+#container {
+    display: flex;
+    flex-direction: column; /* 🔹 untereinander */
+    gap: 15px;
+}
+
+/* Karte */
+#map-container {
+    position: relative;
+    width: 100%;
+    max-width: 1400px;
+}
+
+#map-container img {
+    width: 100%;
+    display: block;
+}
+
+/* Scrollbare Checkbox-Leiste */
 #controls {
     display: flex;
-    flex-direction: column;   /* untereinander */
+    flex-direction: column;
     gap: 10px;
-    width: 220px;
-    max-height: 80vh;         /* scrollbar, wenn zu lang */
+    max-height: 200px;       /* 🔹 Scroll-Höhe */
     overflow-y: auto;
     border: 1px solid #ccc;
     padding: 10px;
     background: #f9f9f9;
 }
 
-/* Einzelne Checkbox + Bild */
+/* Checkbox + Bild */
 .control {
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
-/* Bilder der Checkboxen */
 .control img {
     width: 40px;
     cursor: pointer;
-}
-
-/* Rechte Spalte: Karte */
-#map-container {
-    position: relative;
-    flex: 1;                  /* nimmt Restbreite */
-    max-width: 90vw;
-}
-
-#map-container img {
-    width: 100%;
-    display: block;
 }
 
 /* Punkte */
@@ -84,22 +82,36 @@ body {
 
 <body>
 
-<h2 style="padding-left:20px;">Kategorien</h2>
+<h2>Kategorien</h2>
 
 <div id="container">
 
-    <!-- Linke Spalte: Scrollbare Checkbox-Liste -->
+    <!-- KARTE -->
+    <div id="map-container">
+        <img src="karte.png" alt="Karte">
+
+        <!-- Beispielpunkte -->
+        <div class="point gruppe1" style="top: 40%; left: 30%;" onclick="showPopup(this, 'Punkt A')"></div>
+        <div class="point gruppe1" style="top: 55%; left: 35%;" onclick="showPopup(this, 'Punkt B')"></div>
+
+        <div class="point gruppe2" style="top: 60%; left: 60%;" onclick="showPopup(this, 'Punkt C')"></div>
+        <div class="point gruppe3" style="top: 20%; left: 50%;" onclick="showPopup(this, 'Punkt D')"></div>
+
+        <div id="popup" class="popup"></div>
+    </div>
+
+    <!-- SCROLLBARE CHECKBOX-LISTE UNTER DER KARTE -->
     <div id="controls">
         <label class="control">
             <input type="checkbox" onclick="toggleGroup('gruppe1')">
             <img src="icon1.png">
-            <span>Gericht 1</span>
+            <span>Kategorie 1</span>
         </label>
 
         <label class="control">
             <input type="checkbox" onclick="toggleGroup('gruppe2')">
             <img src="icon2.png">
-            <span>Gericht 2</span>
+            <span>Kategorie 2</span>
         </label>
 
         <label class="control">
@@ -151,21 +163,6 @@ body {
         </label>
     </div>
 
-    <!-- Rechte Spalte: Karte -->
-    <div id="map-container">
-        <img src="karte.png" alt="Karte">
-
-        <!-- Beispielpunkte -->
-        <div class="point gruppe1" style="top: 5%; left: 5%;" onclick="showPopup(this, 'Creme fresh')"></div>
-        <div class="point gruppe1" style="top: 28%; left: 70%;" onclick="showPopup(this, 'Hähnchen')"></div>
-
-        <div class="point gruppe2" style="top: 60%; left: 60%;" onclick="showPopup(this, 'Punkt C')"></div>
-        <div class="point gruppe3" style="top: 20%; left: 50%;" onclick="showPopup(this, 'Punkt D')"></div>
-        <div class="point gruppe4" style="top: 70%; left: 40%;" onclick="showPopup(this, 'Punkt E')"></div>
-
-        <div id="popup" class="popup"></div>
-    </div>
-
 </div>
 
 <script>
@@ -179,7 +176,7 @@ function toggleGroup(gruppe) {
 
 // Popup anzeigen
 function showPopup(point, text) {
-    event.stopPropagation(); // verhindert sofortiges Schließen
+    event.stopPropagation();
 
     const popup = document.getElementById('popup');
     popup.innerText = text;
@@ -196,7 +193,6 @@ function hidePopup() {
 // Klick außerhalb schließt Popup
 document.addEventListener('click', function(event) {
     const popup = document.getElementById('popup');
-
     if (
         popup.style.display === 'block' &&
         !event.target.classList.contains('point') &&
