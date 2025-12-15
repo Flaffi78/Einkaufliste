@@ -7,22 +7,13 @@
 <style>
 body {
     font-family: Arial, sans-serif;
-    margin: 0;
     padding: 20px;
-}
-
-/* Gesamtlayout */
-#container {
-    display: flex;
-    flex-direction: column; /* 🔹 untereinander */
-    gap: 15px;
 }
 
 /* Karte */
 #map-container {
     position: relative;
-    width: 100%;
-    max-width: 1400px;
+    max-width: 1200px;
 }
 
 #map-container img {
@@ -30,39 +21,20 @@ body {
     display: block;
 }
 
-/* Scrollbare Checkbox-Leiste */
-#controls {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    max-height: 200px;       /* 🔹 Scroll-Höhe */
-    overflow-y: auto;
-    border: 1px solid #ccc;
-    padding: 10px;
-    background: #f9f9f9;
-}
-
-/* Checkbox + Bild */
-.control {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.control img {
-    width: 40px;
-    cursor: pointer;
-}
-
-/* Punkte */
-.point {
+/* Marker */
+.marker {
     position: absolute;
-    width: 16px;
-    height: 16px;
+    width: 22px;
+    height: 22px;
     background: red;
     border-radius: 50%;
+    color: white;
+    font-size: 12px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
-    display: none;
 }
 
 /* Popup */
@@ -72,144 +44,105 @@ body {
     border: 1px solid #333;
     padding: 6px 10px;
     font-size: 12px;
-    white-space: nowrap;
     display: none;
     z-index: 10;
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+}
+
+/* Scrollbare Gericht-Liste */
+#controls {
+    margin-top: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    border: 1px solid #ccc;
+    padding: 10px;
 }
 </style>
 </head>
 
 <body>
 
-    <h2>Edeka Laufroute</h2>
+<h1>Einkaufsliste</h1>
 
-<div id="container">
+<!-- KARTE -->
+<div id="map-container">
+    <img src="karte.png" alt="Marktkarte">
+    <div id="markers"></div>
+    <div id="popup" class="popup"></div>
+</div>
 
-    <!-- KARTE -->
-    <div id="map-container">
-        <img src="karte.png" alt="Karte">
+<h3>Gerichte</h3>
 
-        <!-- Beispielpunkte -->
-        <div class="point gruppe1" style="top: 40%; left: 30%;" onclick="showPopup(this, 'Punkt A')"></div>
-        <div class="point gruppe1" style="top: 55%; left: 35%;" onclick="showPopup(this, 'Punkt B')"></div>
-
-        <div class="point gruppe2" style="top: 60%; left: 60%;" onclick="showPopup(this, 'Punkt C')"></div>
-        <div class="point gruppe3" style="top: 20%; left: 50%;" onclick="showPopup(this, 'Punkt D')"></div>
-
-        <div id="popup" class="popup"></div>
-    </div>
-
-    <h2>Gerichteübersicht</h2>
-    <!-- SCROLLBARE CHECKBOX-LISTE UNTER DER KARTE -->
-    <div id="controls">
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe1')">
-            <img src="icon1.png">
-            <span>Kategorie 1</span>
-        </label>
-
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe2')">
-            <img src="icon2.png">
-            <span>Kategorie 2</span>
-        </label>
-
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe3')">
-            <img src="icon3.png">
-            <span>Kategorie 3</span>
-        </label>
-
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe4')">
-            <img src="icon4.png">
-            <span>Kategorie 4</span>
-        </label>
-
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe5')">
-            <img src="icon5.png">
-            <span>Kategorie 5</span>
-        </label>
-
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe6')">
-            <img src="icon6.png">
-            <span>Kategorie 6</span>
-        </label>
-
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe7')">
-            <img src="icon7.png">
-            <span>Kategorie 7</span>
-        </label>
-
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe8')">
-            <img src="icon8.png">
-            <span>Kategorie 8</span>
-        </label>
-
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe9')">
-            <img src="icon9.png">
-            <span>Kategorie 9</span>
-        </label>
-
-        <label class="control">
-            <input type="checkbox" onclick="toggleGroup('gruppe10')">
-            <img src="icon10.png">
-            <span>Kategorie 10</span>
-        </label>
-    </div>
-
+<!-- Scrollbare Checkbox-Liste -->
+<div id="controls">
+    <label><input type="checkbox" onchange="updateMap()" value="gericht1"> Spaghetti Bolognese</label><br>
+    <label><input type="checkbox" onchange="updateMap()" value="gericht2"> Pizza Margherita</label><br>
+    <label><input type="checkbox" onchange="updateMap()" value="gericht3"> Salat</label><br>
 </div>
 
 <script>
-// Gruppen ein-/ausblenden
-function toggleGroup(gruppe) {
-    const points = document.querySelectorAll('.' + gruppe);
-    points.forEach(p => {
-        p.style.display = (p.style.display === 'block') ? 'none' : 'block';
+// 🔹 Zutaten-Datenbank (Standort auf der Karte)
+const zutaten = {
+    tomate:   { name: "Tomaten",  top: 40, left: 30 },
+    kaese:    { name: "Käse",     top: 55, left: 35 },
+    nudeln:   { name: "Nudeln",   top: 60, left: 60 },
+    salat:    { name: "Salat",    top: 25, left: 50 }
+};
+
+// 🔹 Welche Gerichte enthalten welche Zutaten
+const gerichte = {
+    gericht1: ["tomate", "nudeln"],          // Spaghetti
+    gericht2: ["tomate", "kaese"],            // Pizza
+    gericht3: ["salat", "tomate"]             // Salat
+};
+
+// Karte aktualisieren
+function updateMap() {
+    const markersDiv = document.getElementById("markers");
+    markersDiv.innerHTML = "";
+
+    const counter = {};
+
+    // aktive Gerichte sammeln
+    document.querySelectorAll("#controls input:checked").forEach(cb => {
+        gerichte[cb.value].forEach(zutat => {
+            counter[zutat] = (counter[zutat] || 0) + 1;
+        });
+    });
+
+    // Marker erzeugen
+    Object.keys(counter).forEach(zutatKey => {
+        const zutat = zutaten[zutatKey];
+
+        const marker = document.createElement("div");
+        marker.className = "marker";
+        marker.style.top = zutat.top + "%";
+        marker.style.left = zutat.left + "%";
+        marker.innerText = counter[zutatKey];
+
+        marker.onclick = (e) => {
+            e.stopPropagation();
+            showPopup(marker, zutat.name + " (" + counter[zutatKey] + "×)");
+        };
+
+        markersDiv.appendChild(marker);
     });
 }
 
 // Popup anzeigen
-function showPopup(point, text) {
-    event.stopPropagation();
-
-    const popup = document.getElementById('popup');
+function showPopup(marker, text) {
+    const popup = document.getElementById("popup");
     popup.innerText = text;
-    popup.style.display = 'block';
-    popup.style.top = (point.offsetTop - 30) + 'px';
-    popup.style.left = (point.offsetLeft + 20) + 'px';
+    popup.style.display = "block";
+    popup.style.top = (marker.offsetTop - 30) + "px";
+    popup.style.left = (marker.offsetLeft + 25) + "px";
 }
 
-// Popup schließen
-function hidePopup() {
-    document.getElementById('popup').style.display = 'none';
-}
-
-// Klick außerhalb schließt Popup
-document.addEventListener('click', function(event) {
-    const popup = document.getElementById('popup');
-    if (
-        popup.style.display === 'block' &&
-        !event.target.classList.contains('point') &&
-        event.target !== popup
-    ) {
-        hidePopup();
-    }
-});
-
-// ESC schließt Popup
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') hidePopup();
+// Popup schließen bei Klick außerhalb
+document.addEventListener("click", () => {
+    document.getElementById("popup").style.display = "none";
 });
 </script>
 
 </body>
 </html>
-
-
