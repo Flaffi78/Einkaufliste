@@ -10,7 +10,7 @@ body {
     padding: 20px;
 }
 
-/* Karte */
+/* ===================== KARTE ===================== */
 #map-container {
     position: relative;
     max-width: 1200px;
@@ -37,7 +37,7 @@ body {
     cursor: pointer;
 }
 
-/* Popup */
+/* Popup für Zutaten */
 .popup {
     position: absolute;
     background: white;
@@ -49,7 +49,7 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
-/* Scrollbare Gericht-Liste */
+/* ===================== GERICHTE ===================== */
 #controls {
     margin-top: 15px;
     max-height: 200px;
@@ -58,7 +58,6 @@ body {
     padding: 10px;
 }
 
-/* Gericht-Eintrag */
 .gericht {
     display: flex;
     align-items: center;
@@ -66,7 +65,7 @@ body {
     margin-bottom: 10px;
 }
 
-/* Label (Checkbox + Text) */
+/* Checkbox + Text */
 .gericht label {
     display: flex;
     align-items: center;
@@ -74,18 +73,28 @@ body {
     cursor: pointer;
 }
 
-/* Icon */
+/* Icon (nur Vorschau) */
 .icon {
     width: 32px;
     height: 32px;
     cursor: pointer;
-    transition: transform 0.2s ease;
 }
 
-/* Aktive Vorschau */
-.icon.preview-active {
-    transform: scale(5.2);
-    z-index: 100;
+/* ===================== FULLSCREEN OVERLAY ===================== */
+#iconOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#iconOverlay img {
+    max-width: 90vw;
+    max-height: 90vh;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
 }
 </style>
 </head>
@@ -94,7 +103,7 @@ body {
 
 <h1>Einkaufsliste</h1>
 
-<!-- KARTE -->
+<!-- ===================== KARTE ===================== -->
 <div id="map-container">
     <img src="karte.png" alt="Marktkarte">
     <div id="markers"></div>
@@ -103,7 +112,7 @@ body {
 
 <h3>Gerichte</h3>
 
-<!-- Scrollbare Checkbox-Liste -->
+<!-- ===================== GERICHTE ===================== -->
 <div id="controls">
 
     <div class="gericht">
@@ -127,33 +136,40 @@ body {
             <input type="checkbox" onchange="updateMap()" value="gericht3">
             <span>Salat</span>
         </label>
-        <img src="icon1.png" class="icon" alt="Salat">
+        <img src="icon2.png" class="icon" alt="Salat">
     </div>
 
 </div>
 
+<!-- ===================== FULLSCREEN ICON OVERLAY ===================== -->
+<div id="iconOverlay">
+    <img id="iconOverlayImg" src="">
+</div>
+
 <script>
-// ---------- ICON PREVIEW LOGIK ----------
-const icons = document.querySelectorAll(".icon");
+/* ===================== ICON OVERLAY ===================== */
+const overlay = document.getElementById("iconOverlay");
+const overlayImg = document.getElementById("iconOverlayImg");
 
-icons.forEach(icon => {
-    icon.addEventListener("click", function (e) {
-        e.stopPropagation(); // verhindert Checkbox / Dokument-Klick
-
-        // alle anderen Icons zurücksetzen
-        icons.forEach(i => i.classList.remove("preview-active"));
-
-        // dieses Icon aktivieren
-        this.classList.add("preview-active");
+document.querySelectorAll(".icon").forEach(icon => {
+    icon.addEventListener("click", (e) => {
+        e.stopPropagation();              // Checkbox nicht toggeln
+        overlayImg.src = icon.src;
+        overlay.style.display = "flex";
     });
 });
 
-// Klick irgendwo anders → Vorschau schließen
-document.addEventListener("click", () => {
-    icons.forEach(i => i.classList.remove("preview-active"));
+// Klick auf Hintergrund → schließen
+overlay.addEventListener("click", () => {
+    overlay.style.display = "none";
 });
 
-// ---------- ZUTATEN / KARTE ----------
+// ESC → schließen
+document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") overlay.style.display = "none";
+});
+
+/* ===================== ZUTATEN & KARTE ===================== */
 const zutaten = {
     tomate: { name: "Tomaten", top: 40, left: 30 },
     kaese:  { name: "Käse",    top: 55, left: 35 },
@@ -179,25 +195,24 @@ function updateMap() {
         });
     });
 
-    Object.keys(counter).forEach(zutatKey => {
-        const zutat = zutaten[zutatKey];
+    Object.keys(counter).forEach(key => {
+        const z = zutaten[key];
 
         const marker = document.createElement("div");
         marker.className = "marker";
-        marker.style.top = zutat.top + "%";
-        marker.style.left = zutat.left + "%";
-        marker.innerText = counter[zutatKey];
+        marker.style.top = z.top + "%";
+        marker.style.left = z.left + "%";
+        marker.innerText = counter[key];
 
         marker.onclick = (e) => {
             e.stopPropagation();
-            showPopup(marker, zutat.name + " (" + counter[zutatKey] + "×)");
+            showPopup(marker, z.name + " (" + counter[key] + "×)");
         };
 
         markersDiv.appendChild(marker);
     });
 }
 
-// Popup anzeigen
 function showPopup(marker, text) {
     const popup = document.getElementById("popup");
     popup.innerText = text;
