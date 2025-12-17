@@ -57,48 +57,42 @@ body {
     border: 1px solid #ccc;
     padding: 10px;
 }
-    /* Gericht-Eintrag */
+
+/* Gericht-Eintrag */
 .gericht {
     display: flex;
     align-items: center;
-    gap: 8px;
-    cursor: pointer;
-    user-select: none;
+    gap: 12px;
+    margin-bottom: 10px;
 }
 
-/* Checkbox */
-.gericht input {
-    margin-right: 5px;
+/* Label (Checkbox + Text) */
+.gericht label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
 }
 
 /* Icon */
-.gericht .icon {
+.icon {
     width: 32px;
     height: 32px;
+    cursor: pointer;
     transition: transform 0.2s ease;
 }
 
-/* Hover (Desktop) */
-.gericht:hover .icon {
-    transform: scale(1.2);
+/* Aktive Vorschau */
+.icon.preview-active {
+    transform: scale(5.2);
+    z-index: 100;
 }
-
-/* Aktiv (Tippen / Klicken) */
-.gericht:active .icon {
-    transform: scale(1.4);
-}
-
-/* Optional: wenn Checkbox aktiv */
-.gericht input:checked + .name + .icon {
-    transform: scale(1.3);
-}
-
 </style>
 </head>
 
 <body>
 
-<h1>Laufroute</h1>
+<h1>Einkaufsliste</h1>
 
 <!-- KARTE -->
 <div id="map-container">
@@ -111,54 +105,80 @@ body {
 
 <!-- Scrollbare Checkbox-Liste -->
 <div id="controls">
-    <label class="gericht">
-        <input type="checkbox" onchange="updateMap()" value="gericht1"> 
-        <span class="name">Spaghetti Bolognese</span>
-        <img src="icon1.png" class="icon"></label><br>
-    
-    <label class="gericht">
-        <input type="checkbox" onchange="updateMap()" value="gericht2">
-        <span class="name">Hänchen mit Hoffnung</span>
-        <img src="icon1.png" class="icon"></label><br>
-    
-    <label class="gericht">
-        <input type="checkbox" onchange="updateMap()" value="gericht3"> 
-        <span class="name">Salat</span>
-        <img src="icon2.png" class="icon"></label><br>
-    
+
+    <div class="gericht">
+        <label>
+            <input type="checkbox" onchange="updateMap()" value="gericht1">
+            <span>Spaghetti Bolognese</span>
+        </label>
+        <img src="icon1.png" class="icon" alt="Spaghetti">
+    </div>
+
+    <div class="gericht">
+        <label>
+            <input type="checkbox" onchange="updateMap()" value="gericht2">
+            <span>Pizza Margherita</span>
+        </label>
+        <img src="icon1.png" class="icon" alt="Pizza">
+    </div>
+
+    <div class="gericht">
+        <label>
+            <input type="checkbox" onchange="updateMap()" value="gericht3">
+            <span>Salat</span>
+        </label>
+        <img src="icon1.png" class="icon" alt="Salat">
+    </div>
+
 </div>
 
 <script>
-// 🔹 Zutaten-Datenbank (Standort auf der Karte)
+// ---------- ICON PREVIEW LOGIK ----------
+const icons = document.querySelectorAll(".icon");
+
+icons.forEach(icon => {
+    icon.addEventListener("click", function (e) {
+        e.stopPropagation(); // verhindert Checkbox / Dokument-Klick
+
+        // alle anderen Icons zurücksetzen
+        icons.forEach(i => i.classList.remove("preview-active"));
+
+        // dieses Icon aktivieren
+        this.classList.add("preview-active");
+    });
+});
+
+// Klick irgendwo anders → Vorschau schließen
+document.addEventListener("click", () => {
+    icons.forEach(i => i.classList.remove("preview-active"));
+});
+
+// ---------- ZUTATEN / KARTE ----------
 const zutaten = {
-    tomate:   { name: "Tomaten",  top: 40, left: 30 },
-    kaese:    { name: "Käse",     top: 55, left: 35 },
-    nudeln:   { name: "Nudeln",   top: 60, left: 60 },
-    salat:    { name: "Salat",    top: 25, left: 50 }
+    tomate: { name: "Tomaten", top: 40, left: 30 },
+    kaese:  { name: "Käse",    top: 55, left: 35 },
+    nudeln: { name: "Nudeln",  top: 60, left: 60 },
+    salat:  { name: "Salat",   top: 25, left: 50 }
 };
 
-// 🔹 Welche Gerichte enthalten welche Zutaten
 const gerichte = {
-    gericht1: ["tomate", "nudeln"],          // Spaghetti
-    gericht2: ["tomate", "kaese"],            // Pizza
-    gericht3: ["salat", "tomate"]             // Salat
+    gericht1: ["tomate", "nudeln"],
+    gericht2: ["tomate", "kaese"],
+    gericht3: ["salat", "tomate"]
 };
 
-// Karte aktualisieren
 function updateMap() {
     const markersDiv = document.getElementById("markers");
     markersDiv.innerHTML = "";
 
     const counter = {};
 
-    // aktive Gerichte sammeln
     document.querySelectorAll("#controls input:checked").forEach(cb => {
         gerichte[cb.value].forEach(zutat => {
             counter[zutat] = (counter[zutat] || 0) + 1;
         });
     });
 
-    // Marker erzeugen
     Object.keys(counter).forEach(zutatKey => {
         const zutat = zutaten[zutatKey];
 
@@ -186,7 +206,7 @@ function showPopup(marker, text) {
     popup.style.left = (marker.offsetLeft + 25) + "px";
 }
 
-// Popup schließen bei Klick außerhalb
+// Popup schließen
 document.addEventListener("click", () => {
     document.getElementById("popup").style.display = "none";
 });
@@ -194,8 +214,3 @@ document.addEventListener("click", () => {
 
 </body>
 </html>
-
-
-
-
-
