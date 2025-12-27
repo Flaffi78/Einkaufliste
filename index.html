@@ -14,6 +14,11 @@ body {
 #map-container {
     position: relative;
     max-width: 1200px;
+    margin-top: 20px;
+}
+
+#map-container.hidden {
+    display: none;
 }
 
 #map-container img {
@@ -33,18 +38,6 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    cursor: pointer;
-}
-
-.popup {
-    position: absolute;
-    background: white;
-    border: 1px solid #333;
-    padding: 6px 10px;
-    font-size: 12px;
-    display: none;
-    z-index: 10;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
 /* ===================== LAYOUT ===================== */
@@ -58,9 +51,7 @@ body {
 #controls {
     max-height: 220px;
     overflow-y: auto;
-    border: 1px solid #ccc;
     padding: 10px;
-	border: none;          /* ← Rahmen weg */
 }
 
 .gericht {
@@ -84,30 +75,19 @@ body {
 }
 
 #zutatenListe {
-    border: 1px solid #ccc;
     padding: 10px;
     min-width: 200px;
-	border: none;          /* ← Rahmen weg */
 }
 
 #zutatenListe li {
     margin-bottom: 6px;
 }
 
-/* ===================== FULLSCREEN OVERLAY ===================== */
-#iconOverlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.8);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-}
-
-#iconOverlay img {
-    max-width: 90vw;
-    max-height: 90vh;
+/* ===================== MARKTAUSWAHL ===================== */
+#marktAuswahl label {
+    display: block;
+    margin-bottom: 6px;
+    cursor: pointer;
 }
 </style>
 </head>
@@ -116,17 +96,10 @@ body {
 
 <h1>Einkaufsliste</h1>
 
-<!-- ===================== KARTE ===================== -->
-<div id="map-container">
-    <img src="karte.png" alt="Marktkarte">
-    <div id="markers"></div>
-    <div id="popup" class="popup"></div>
-</div>
-
 <!-- ===================== LISTEN ===================== -->
 <div id="listen-container">
 
-    <!-- GERichte -->
+    <!-- GERICHTE -->
     <div style="flex:1;">
         <div style="display:flex; align-items:center; gap:10px;">
             <h3 style="margin:0;">Gerichte</h3>
@@ -134,31 +107,18 @@ body {
         </div>
 
         <div id="controls">
-
             <div class="gericht">
-                <label>
-                    <input type="checkbox" id="gericht1" value="gericht1">
-                    <span>Spaghetti Bolognese</span>
-                </label>
+                <label><input type="checkbox" id="gericht1" value="gericht1"> Spaghetti Bolognese</label>
                 <img src="icon1.png" class="icon">
             </div>
-
             <div class="gericht">
-                <label>
-                    <input type="checkbox" id="gericht2" value="gericht2">
-                    <span>Pizza Margherita</span>
-                </label>
+                <label><input type="checkbox" id="gericht2" value="gericht2"> Pizza Margherita</label>
                 <img src="icon1.png" class="icon">
             </div>
-
             <div class="gericht">
-                <label>
-                    <input type="checkbox" id="gericht3" value="gericht3">
-                    <span>Salat</span>
-                </label>
+                <label><input type="checkbox" id="gericht3" value="gericht3"> Salat</label>
                 <img src="icon2.png" class="icon">
             </div>
-
         </div>
     </div>
 
@@ -170,34 +130,54 @@ body {
         </ul>
     </div>
 
+    <!-- MARKTAUSWAHL -->
+    <div>
+        <h3>Markt</h3>
+        <div id="marktAuswahl">
+            <label>
+                <input type="radio" name="markt" value="none" checked>
+                Keine Karte
+            </label>
+            <label>
+                <input type="radio" name="markt" value="edeka">
+                Edeka
+            </label>
+            <label>
+                <input type="radio" name="markt" value="lidl">
+                Lidl
+            </label>
+        </div>
+    </div>
+
 </div>
 
-<!-- ===================== ICON OVERLAY ===================== -->
-<div id="iconOverlay">
-    <img id="iconOverlayImg">
+<!-- ===================== KARTE ===================== -->
+<div id="map-container" class="hidden">
+    <img id="mapImage" src="">
+    <div id="markers"></div>
 </div>
 
 <script>
-/* ===================== ICON OVERLAY ===================== */
-const overlay = document.getElementById("iconOverlay");
-const overlayImg = document.getElementById("iconOverlayImg");
-
-document.querySelectorAll(".icon").forEach(icon => {
-    icon.addEventListener("click", e => {
-        e.stopPropagation();
-        overlayImg.src = icon.src;
-        overlay.style.display = "flex";
-    });
-});
-
-overlay.addEventListener("click", () => overlay.style.display = "none");
-
 /* ===================== DATEN ===================== */
-const zutaten = {
-    tomate: { name: "Tomaten", top: 40, left: 30 },
-    kaese:  { name: "Käse",    top: 55, left: 35 },
-    nudeln: { name: "Nudeln",  top: 60, left: 60 },
-    salat:  { name: "Salat",   top: 25, left: 50 }
+const maps = {
+    edeka: {
+        image: "karte-edeka.png",
+        zutaten: {
+            tomate: { name: "Tomaten", top: 40, left: 30 },
+            kaese:  { name: "Käse",    top: 55, left: 35 },
+            nudeln: { name: "Nudeln",  top: 60, left: 60 },
+            salat:  { name: "Salat",   top: 25, left: 50 }
+        }
+    },
+    lidl: {
+        image: "karte-lidl.png",
+        zutaten: {
+            tomate: { name: "Tomaten", top: 30, left: 50 },
+            kaese:  { name: "Käse",    top: 45, left: 20 },
+            nudeln: { name: "Nudeln",  top: 65, left: 40 },
+            salat:  { name: "Salat",   top: 20, left: 60 }
+        }
+    }
 };
 
 const gerichte = {
@@ -206,52 +186,78 @@ const gerichte = {
     gericht3: ["salat", "tomate"]
 };
 
-/* ===================== UPDATE MAP + ZUTATEN ===================== */
-function updateMap() {
-    const markersDiv = document.getElementById("markers");
-    const zutatenListe = document.getElementById("zutatenListe");
+let currentMap = "none";
 
-    // Zutatenliste immer leeren
+/* ===================== UPDATE ===================== */
+function updateMap() {
+    const zutatenListe = document.getElementById("zutatenListe");
+    const markersDiv = document.getElementById("markers");
+    const mapContainer = document.getElementById("map-container");
+
     zutatenListe.innerHTML = "";
+    markersDiv.innerHTML = "";
 
     const counter = {};
 
     document.querySelectorAll("#controls input:checked").forEach(cb => {
-        gerichte[cb.value].forEach(z => {
-            counter[z] = (counter[z] || 0) + 1;
-        });
+        gerichte[cb.value].forEach(z => counter[z] = (counter[z] || 0) + 1);
     });
 
-    // Karte nur aktualisieren, wenn sie existiert
-    if (markersDiv) {
-        markersDiv.innerHTML = "";
-
+    if (Object.keys(counter).length === 0) {
+        zutatenListe.innerHTML = "<li><em>Keine Zutaten ausgewählt</em></li>";
+    } else {
         Object.keys(counter).forEach(key => {
-            const z = zutaten[key];
+            const name =
+                currentMap !== "none"
+                ? maps[currentMap].zutaten[key]?.name || key
+                : key;
 
-            const marker = document.createElement("div");
-            marker.className = "marker";
-            marker.style.top = z.top + "%";
-            marker.style.left = z.left + "%";
-            marker.innerText = counter[key];
-
-            markersDiv.appendChild(marker);
+            const li = document.createElement("li");
+            li.textContent = `${counter[key]}× ${name}`;
+            zutatenListe.appendChild(li);
         });
     }
 
-    // Zutatenliste
-    if (Object.keys(counter).length === 0) {
-        zutatenListe.innerHTML = "<li><em>Keine Zutaten ausgewählt</em></li>";
+    if (currentMap === "none") {
+        mapContainer.classList.add("hidden");
         return;
     }
 
+    mapContainer.classList.remove("hidden");
+    document.getElementById("mapImage").src = maps[currentMap].image;
+
     Object.keys(counter).forEach(key => {
-        const li = document.createElement("li");
-        li.textContent = `${counter[key]}× ${zutaten[key].name}`;
-        zutatenListe.appendChild(li);
+        const z = maps[currentMap].zutaten[key];
+        if (!z) return;
+
+        const marker = document.createElement("div");
+        marker.className = "marker";
+        marker.style.top = z.top + "%";
+        marker.style.left = z.left + "%";
+        marker.innerText = counter[key];
+        markersDiv.appendChild(marker);
     });
 }
 
+/* ===================== EVENTS ===================== */
+document.querySelectorAll("#controls input").forEach(cb =>
+    cb.addEventListener("change", updateMap)
+);
+
+document.querySelectorAll("input[name='markt']").forEach(rb =>
+    rb.addEventListener("change", () => {
+        currentMap = rb.value;
+        updateMap();
+    })
+);
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+    document.querySelectorAll("#controls input").forEach(cb => cb.checked = false);
+    localStorage.removeItem("eingekaufteGerichte");
+    updateMap();
+});
+
+updateMap();
 
 /* ===================== LOCAL STORAGE ===================== */
 const STORAGE_KEY = "eingekaufteGerichte";
@@ -292,4 +298,3 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 
 </body>
 </html>
-
