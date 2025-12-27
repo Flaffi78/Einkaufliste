@@ -21,7 +21,6 @@ body {
     display: block;
 }
 
-/* Marker */
 .marker {
     position: absolute;
     width: 22px;
@@ -37,7 +36,6 @@ body {
     cursor: pointer;
 }
 
-/* Popup für Zutaten */
 .popup {
     position: absolute;
     background: white;
@@ -49,13 +47,20 @@ body {
     box-shadow: 0 2px 6px rgba(0,0,0,0.3);
 }
 
-/* ===================== GERICHTE ===================== */
+/* ===================== LAYOUT ===================== */
+#listen-container {
+    display: flex;
+    gap: 30px;
+    margin-top: 20px;
+    align-items: flex-start;
+}
+
 #controls {
-    margin-top: 15px;
-    max-height: 200px;
+    max-height: 220px;
     overflow-y: auto;
     border: 1px solid #ccc;
     padding: 10px;
+	border: none;          /* ← Rahmen weg */
 }
 
 .gericht {
@@ -65,7 +70,6 @@ body {
     margin-bottom: 10px;
 }
 
-/* Checkbox + Text */
 .gericht label {
     display: flex;
     align-items: center;
@@ -73,11 +77,21 @@ body {
     cursor: pointer;
 }
 
-/* Icon (nur Vorschau) */
 .icon {
     width: 32px;
     height: 32px;
     cursor: pointer;
+}
+
+#zutatenListe {
+    border: 1px solid #ccc;
+    padding: 10px;
+    min-width: 200px;
+	border: none;          /* ← Rahmen weg */
+}
+
+#zutatenListe li {
+    margin-bottom: 6px;
 }
 
 /* ===================== FULLSCREEN OVERLAY ===================== */
@@ -94,7 +108,6 @@ body {
 #iconOverlay img {
     max-width: 90vw;
     max-height: 90vh;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.6);
 }
 </style>
 </head>
@@ -110,43 +123,56 @@ body {
     <div id="popup" class="popup"></div>
 </div>
 
+<!-- ===================== LISTEN ===================== -->
+<div id="listen-container">
 
-<div style="display:flex; align-items:center; gap:10px;">
-    <h3 style="margin:0;">Gerichte</h3>
-    <button id="resetBtn">Zurücksetzen</button>
+    <!-- GERichte -->
+    <div style="flex:1;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <h3 style="margin:0;">Gerichte</h3>
+            <button id="resetBtn">Zurücksetzen</button>
+        </div>
+
+        <div id="controls">
+
+            <div class="gericht">
+                <label>
+                    <input type="checkbox" id="gericht1" value="gericht1">
+                    <span>Spaghetti Bolognese</span>
+                </label>
+                <img src="icon1.png" class="icon">
+            </div>
+
+            <div class="gericht">
+                <label>
+                    <input type="checkbox" id="gericht2" value="gericht2">
+                    <span>Pizza Margherita</span>
+                </label>
+                <img src="icon1.png" class="icon">
+            </div>
+
+            <div class="gericht">
+                <label>
+                    <input type="checkbox" id="gericht3" value="gericht3">
+                    <span>Salat</span>
+                </label>
+                <img src="icon2.png" class="icon">
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ZUTATENLISTE -->
+    <div style="flex:1;">
+        <h3>Zutatenliste</h3>
+        <ul id="zutatenListe">
+            <li><em>Keine Zutaten ausgewählt</em></li>
+        </ul>
+    </div>
+
 </div>
 
-
-<!-- ===================== GERICHTE ===================== -->
-<div id="controls">
-
-    <div class="gericht">
-        <label>
-            <input type="checkbox" id="gericht1" value="gericht1">
-            <span>Spaghetti Bolognese</span>
-        </label>
-        <img src="icon1.png" class="icon" alt="Spaghetti">
-    </div>
-
-    <div class="gericht">
-        <label>
-            <input type="checkbox" id="gericht2" value="gericht2">
-            <span>Pizza Margherita</span>
-        </label>
-        <img src="icon1.png" class="icon" alt="Pizza">
-    </div>
-
-    <div class="gericht">
-        <label>
-            <input type="checkbox" id="gericht3" value="gericht3">
-            <span>Salat</span>
-        </label>
-        <img src="icon2.png" class="icon" alt="Salat">
-    </div>
-
-</div>
-
-<!-- ===================== FULLSCREEN ICON OVERLAY ===================== -->
+<!-- ===================== ICON OVERLAY ===================== -->
 <div id="iconOverlay">
     <img id="iconOverlayImg">
 </div>
@@ -157,22 +183,16 @@ const overlay = document.getElementById("iconOverlay");
 const overlayImg = document.getElementById("iconOverlayImg");
 
 document.querySelectorAll(".icon").forEach(icon => {
-    icon.addEventListener("click", (e) => {
+    icon.addEventListener("click", e => {
         e.stopPropagation();
         overlayImg.src = icon.src;
         overlay.style.display = "flex";
     });
 });
 
-overlay.addEventListener("click", () => {
-    overlay.style.display = "none";
-});
+overlay.addEventListener("click", () => overlay.style.display = "none");
 
-document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") overlay.style.display = "none";
-});
-
-/* ===================== ZUTATEN & KARTE ===================== */
+/* ===================== DATEN ===================== */
 const zutaten = {
     tomate: { name: "Tomaten", top: 40, left: 30 },
     kaese:  { name: "Käse",    top: 55, left: 35 },
@@ -186,15 +206,19 @@ const gerichte = {
     gericht3: ["salat", "tomate"]
 };
 
+/* ===================== UPDATE MAP + ZUTATEN ===================== */
 function updateMap() {
     const markersDiv = document.getElementById("markers");
+    const zutatenListe = document.getElementById("zutatenListe");
+
     markersDiv.innerHTML = "";
+    zutatenListe.innerHTML = "";
 
     const counter = {};
 
     document.querySelectorAll("#controls input:checked").forEach(cb => {
-        gerichte[cb.value].forEach(zutat => {
-            counter[zutat] = (counter[zutat] || 0) + 1;
+        gerichte[cb.value].forEach(z => {
+            counter[z] = (counter[z] || 0) + 1;
         });
     });
 
@@ -206,70 +230,51 @@ function updateMap() {
         marker.style.top = z.top + "%";
         marker.style.left = z.left + "%";
         marker.innerText = counter[key];
-
-        marker.onclick = (e) => {
-            e.stopPropagation();
-            showPopup(marker, z.name + " (" + counter[key] + "×)");
-        };
-
         markersDiv.appendChild(marker);
+
+        const li = document.createElement("li");
+        li.textContent = `${counter[key]}× ${z.name}`;
+        zutatenListe.appendChild(li);
     });
+
+    if (Object.keys(counter).length === 0) {
+        zutatenListe.innerHTML = "<li><em>Keine Zutaten ausgewählt</em></li>";
+    }
 }
 
-function showPopup(marker, text) {
-    const popup = document.getElementById("popup");
-    popup.innerText = text;
-    popup.style.display = "block";
-    popup.style.top = (marker.offsetTop - 30) + "px";
-    popup.style.left = (marker.offsetLeft + 25) + "px";
-}
-
-document.addEventListener("click", () => {
-    document.getElementById("popup").style.display = "none";
-});
-
-/* ===================== CHECKBOX-STATUS SPEICHERN ===================== */
+/* ===================== LOCAL STORAGE ===================== */
 const STORAGE_KEY = "eingekaufteGerichte";
 
-function saveCheckboxState() {
-    const states = {};
-    document.querySelectorAll("#controls input[type='checkbox']").forEach(cb => {
-        states[cb.id] = cb.checked;
+function saveState() {
+    const state = {};
+    document.querySelectorAll("#controls input").forEach(cb => {
+        state[cb.id] = cb.checked;
     });
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(states));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 }
 
-document.querySelectorAll("#controls input[type='checkbox']").forEach(cb => {
+document.querySelectorAll("#controls input").forEach(cb => {
     cb.addEventListener("change", () => {
-        saveCheckboxState();
+        saveState();
         updateMap();
     });
 });
 
-/* ===================== STATUS BEIM LADEN WIEDERHERSTELLEN ===================== */
 window.addEventListener("DOMContentLoaded", () => {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
-        const states = JSON.parse(saved);
-        document.querySelectorAll("#controls input[type='checkbox']").forEach(cb => {
-            if (states.hasOwnProperty(cb.id)) {
-                cb.checked = states[cb.id];
-            }
+        const state = JSON.parse(saved);
+        document.querySelectorAll("#controls input").forEach(cb => {
+            cb.checked = !!state[cb.id];
         });
     }
     updateMap();
 });
-/* ===================== RESET BUTTON ===================== */
+
+/* ===================== RESET ===================== */
 document.getElementById("resetBtn").addEventListener("click", () => {
-    // Checkboxen zurücksetzen
-    document.querySelectorAll("#controls input[type='checkbox']").forEach(cb => {
-        cb.checked = false;
-    });
-
-    // localStorage löschen
+    document.querySelectorAll("#controls input").forEach(cb => cb.checked = false);
     localStorage.removeItem(STORAGE_KEY);
-
-    // Karte aktualisieren
     updateMap();
 });
 </script>
