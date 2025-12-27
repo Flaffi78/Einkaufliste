@@ -211,7 +211,7 @@ function updateMap() {
     const markersDiv = document.getElementById("markers");
     const zutatenListe = document.getElementById("zutatenListe");
 
-    markersDiv.innerHTML = "";
+    // Zutatenliste immer leeren
     zutatenListe.innerHTML = "";
 
     const counter = {};
@@ -222,25 +222,36 @@ function updateMap() {
         });
     });
 
-    Object.keys(counter).forEach(key => {
-        const z = zutaten[key];
+    // Karte nur aktualisieren, wenn sie existiert
+    if (markersDiv) {
+        markersDiv.innerHTML = "";
 
-        const marker = document.createElement("div");
-        marker.className = "marker";
-        marker.style.top = z.top + "%";
-        marker.style.left = z.left + "%";
-        marker.innerText = counter[key];
-        markersDiv.appendChild(marker);
+        Object.keys(counter).forEach(key => {
+            const z = zutaten[key];
 
-        const li = document.createElement("li");
-        li.textContent = `${counter[key]}× ${z.name}`;
-        zutatenListe.appendChild(li);
-    });
+            const marker = document.createElement("div");
+            marker.className = "marker";
+            marker.style.top = z.top + "%";
+            marker.style.left = z.left + "%";
+            marker.innerText = counter[key];
 
+            markersDiv.appendChild(marker);
+        });
+    }
+
+    // Zutatenliste
     if (Object.keys(counter).length === 0) {
         zutatenListe.innerHTML = "<li><em>Keine Zutaten ausgewählt</em></li>";
+        return;
     }
+
+    Object.keys(counter).forEach(key => {
+        const li = document.createElement("li");
+        li.textContent = `${counter[key]}× ${zutaten[key].name}`;
+        zutatenListe.appendChild(li);
+    });
 }
+
 
 /* ===================== LOCAL STORAGE ===================== */
 const STORAGE_KEY = "eingekaufteGerichte";
@@ -281,3 +292,4 @@ document.getElementById("resetBtn").addEventListener("click", () => {
 
 </body>
 </html>
+
