@@ -7,6 +7,7 @@
 <style>
 body {
     font-family: Arial, sans-serif;
+	font-size: 24px; /* Base font size */
     padding: 20px;
 }
 
@@ -72,6 +73,22 @@ body {
     width: 32px;
     height: 32px;
     cursor: pointer;
+}
+
+/* ===================== FULLSCREEN OVERLAY ===================== */
+#iconOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.8);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+#iconOverlay img {
+    max-width: 90vw;
+    max-height: 90vh;
 }
 
 #zutatenListe {
@@ -150,7 +167,10 @@ body {
     </div>
 
 </div>
-
+<!-- ===================== ICON OVERLAY ===================== -->
+<div id="iconOverlay">
+    <img id="iconOverlayImg">
+</div>
 <!-- ===================== KARTE ===================== -->
 <div id="map-container" class="hidden">
     <img id="mapImage" src="">
@@ -158,6 +178,20 @@ body {
 </div>
 
 <script>
+/* ===================== ICON OVERLAY ===================== */
+const overlay = document.getElementById("iconOverlay");
+const overlayImg = document.getElementById("iconOverlayImg");
+
+document.querySelectorAll(".icon").forEach(icon => {
+    icon.addEventListener("click", e => {
+        e.stopPropagation();
+        overlayImg.src = icon.src;
+        overlay.style.display = "flex";
+    });
+});
+
+overlay.addEventListener("click", () => overlay.style.display = "none");
+
 /* ===================== DATEN ===================== */
 const maps = {
     edeka: {
