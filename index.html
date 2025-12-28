@@ -90,6 +90,7 @@ body {
     max-width: 90vw;
     max-height: 90vh;
 }
+/* ===================== FULLSCREEN OVERLAY END ===================== */
 
 #zutatenListe {
     padding: 10px;
@@ -117,7 +118,7 @@ body {
 <div id="listen-container">
 
     <!-- GERICHTE -->
-    <div style="flex:1;">
+    <div style="flex:1; max-width: 600px;">
         <div style="display:flex; align-items:center; gap:10px;">
             <h3 style="margin:0;">Gerichte</h3>
             <button id="resetBtn">Zurücksetzen</button>
@@ -125,16 +126,28 @@ body {
 
         <div id="controls">
             <div class="gericht">
-                <label><input type="checkbox" id="gericht1" value="gericht1"> Spaghetti Bolognese</label>
-                <img src="icon1.png" class="icon">
+                <label><input type="checkbox" id="gericht1" value="gericht1"> Mustergericht</label>
+                <img src="gericht1.png" class="icon">
             </div>
             <div class="gericht">
-                <label><input type="checkbox" id="gericht2" value="gericht2"> Pizza Margherita</label>
-                <img src="icon1.png" class="icon">
+                <label><input type="checkbox" id="gericht2" value="gericht2"> Mustergericht</label>
+                <img src="gericht2.png" class="icon">
             </div>
             <div class="gericht">
-                <label><input type="checkbox" id="gericht3" value="gericht3"> Salat</label>
-                <img src="icon2.png" class="icon">
+                <label><input type="checkbox" id="gericht3" value="gericht3"> Mustergericht</label>
+                <img src="gericht3.png" class="icon">
+            </div>
+			<div class="gericht">
+                <label><input type="checkbox" id="gericht4" value="gericht4"> Hähnchenbrust mit Pflaumen-Sriracha-Soße</label>
+                <img src="gericht4.png" class="icon">
+            </div>
+            <div class="gericht">
+                <label><input type="checkbox" id="gericht5" value="gericht5"> Mustergericht</label>
+                <img src="gericht5.png" class="icon">
+            </div>
+            <div class="gericht">
+                <label><input type="checkbox" id="gericht6" value="gericht6"> Mustergericht</label>
+                <img src="gericht6.png" class="icon">
             </div>
         </div>
     </div>
@@ -167,6 +180,7 @@ body {
     </div>
 
 </div>
+
 <!-- ===================== ICON OVERLAY ===================== -->
 <div id="iconOverlay">
     <img id="iconOverlayImg">
@@ -217,7 +231,10 @@ const maps = {
 const gerichte = {
     gericht1: ["tomate", "nudeln"],
     gericht2: ["tomate", "kaese"],
-    gericht3: ["salat", "tomate"]
+    gericht3: ["salat", "tomate"],
+	gericht4: ["Hähnchenbrust 500g", "Kartoffel festkochend 1000g", "Salatmischung", "Knoblauchzehen 2stk", "Buttermilch-Zitronen-Dressing 100ml", "Pflaumenkonfitüre 160g", "Sriracha Soße 8ml", "Sojasoße 20ml"],
+    gericht5: ["tomate", "kaese"],
+    gericht6: ["salat", "tomate"]
 };
 
 let currentMap = "none";
